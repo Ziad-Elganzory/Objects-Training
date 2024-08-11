@@ -14,6 +14,7 @@
         "filament/spatie-laravel-settings-plugin": "^3.2",
         "filament/widgets": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
+        "kreait/laravel-firebase": "*",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",

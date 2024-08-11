@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use App\Traits\ApiResponse;
+use Kreait\Firebase\Contract\Database;
+use PhpParser\Node\Expr\Cast\String_;
 
 /**
  * @OA\Info(title="My API", version="1.0"),
@@ -34,9 +36,12 @@ use App\Traits\ApiResponse;
  *     )
  * )
  */
-
 class PostController extends Controller
 {
+    protected $database;
+    protected $tableName;
+
+
     use ApiResponse;
 
       /**
@@ -65,14 +70,22 @@ class PostController extends Controller
      * )
      */
 
+     public function __construct(Database $database)
+     {
+         $this->database = $database;
+         $this->tableName = 'posts';
+     }
+
     // Get All Posts
     public function index()
     {
         try {
+
+            $postRef = $this->database->getReference($this->tableName)->getValue();
             $posts = Post::all();
-            return $this->successResponse(PostResource::collection($posts),'Posts Retrived Successfully');
+            return $this->successResponse(['Sql'=>PostResource::collection($posts),'FireBase'=>$postRef],__('messages.posts.success.posts_retrived'));
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to retrieve posts', 500,$e->getMessage());
+            return $this->errorResponse(__('messages.posts.fail.posts_retrived'), 500,$e->getMessage());
         }
     }
 
@@ -116,11 +129,12 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         try {
-            $post = Post::create($request->validated());
-
-            return $this->successResponse(new PostResource($post),'Post Created Successfully');
+            $postData = $request->validated();
+            $post = Post::create($postData);
+            $postRef = $this->database->getReference($this->tableName)->push($postData)->getValue();
+            return $this->successResponse(['Sql'=>new PostResource($post),'FireBase'=>$postRef],__('messages.posts.success.post_created'));
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to create post', 500,$e->getMessage());
+            return $this->errorResponse(__('messages.posts.fail.post_created'), 500,$e->getMessage());
         }
     }
 
@@ -135,7 +149,7 @@ class PostController extends Controller
      *         name="id",
      *         in="path",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -157,12 +171,17 @@ class PostController extends Controller
     public function show($id)
     {
         try {
-            $post = Post::findOrFail($id);
-            return $this->successResponse(new PostResource($post),'Post Retrived Successfully');
+            if(gettype($id) == 'string'){
+                $editData = $this->database->getReference($this->tableName)->getChild($id)->getValue();
+                return $this->successResponse(['FireBase'=>$editData],__('messages.posts.success.post_retrived'));
+            } elseif(gettype($id)=='integer') {
+                $post = Post::findOrFail($id);
+                return $this->successResponse(['Sql'=>new PostResource($post)],__('messages.posts.success.post_retrived'));
+            }
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse('Post not found', 404,$e->getMessage());
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to retrieve post', 500,$e->getMessage());
+            return $this->errorResponse(__('messages.posts.fail.post_retrived'), 500,$e->getMessage());
         }
     }
 
@@ -178,7 +197,7 @@ class PostController extends Controller
      *         name="id",
      *         in="path",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
@@ -201,17 +220,18 @@ class PostController extends Controller
      */
 
     // Update Post
-    public function update(UpdatePostRequest $request, $id)
+    public function update(UpdatePostRequest $request,String $id)
     {
         try {
-            $post = Post::findOrFail($id);
-            // var_dump($post);
-            $post->update($request->validated());
-            return $this->successResponse(new PostResource($post),'Post Updated Successfully');
+            $postData = $request->validated();
+            // $post = Post::findOrFail($id);
+            // $post->update($postData);
+            $this->database->getReference($this->tableName.'/'.$id)->update($postData);
+            return $this->successResponse(/*new PostResource($post)*/$postData,__('messages.posts.success.post_update'));
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse('Post not found', 404,$e->getMessage());
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to update post', 500,$e->getMessage());
+            return $this->errorResponse(__('messages.posts.fail.post_update'), 500,$e->getMessage());
         }
     }
 
@@ -227,7 +247,7 @@ class PostController extends Controller
      *         name="id",
      *         in="path",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="")
      *     ),
      *     @OA\Response(
      *         response=204,
@@ -248,13 +268,16 @@ class PostController extends Controller
     public function destroy($id)
     {
         try {
-            $post = Post::findOrFail($id);
-            $post->delete();
-            return $this->successResponse(PostResource::collection($post),'Post Deleted Successfully');
+            $post = $this->database->getReference($this->tableName.'/'.$id);
+            $postValue = $post->getValue();
+            $post->remove();
+            // $post = Post::findOrFail($id);
+            // $post->delete();
+            return $this->successResponse(/*PostResource::collection($post)*/["FireBase"=>$postValue],__('messages.posts.success.post_delete'));
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse('Post not found', 404,$e->getMessage());
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to delete post', 500,$e->getMessage());
+            return $this->errorResponse(__('messages.posts.fail.post_delete'), 500,$e->getMessage());
         }
     }
 }

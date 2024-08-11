@@ -52,13 +52,12 @@ Route::group([
 });
 
 //Post CRUD
-
-Route::controller(PostController::class)->group(function(){
+Route::middleware(['lang'])->controller(PostController::class)->group(function(){
     Route::get('/posts','index'); // Get All Posts
-    Route::post('/posts','store'); //Creat Post
+    Route::post('/posts','store')->middleware('lang'); //Creat Post
     Route::get('/posts/{id}','show'); // Get One Post
     Route::put('/posts/{id}','update'); // Update Post
-    Route::delete('/posts/{id}','delete'); // Delete Post
+    Route::delete('/posts/{id}','destroy'); // Delete Post
 });
 
 
