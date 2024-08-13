@@ -28,7 +28,8 @@ class User extends Authenticatable implements FilamentUser , JWTSubject
     protected $fillable = [
         'name',
         'email',
-        'password'
+        'password',
+        'firebase_uid'
     ];
 
     /**

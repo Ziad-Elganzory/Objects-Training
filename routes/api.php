@@ -4,6 +4,7 @@
     use Illuminate\Support\Facades\Route;
     use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FirebaseController;
+use App\Http\Controllers\FirebaseNotificationController;
 use App\Http\Controllers\PostController;
     use App\Http\Controllers\SanctumAuthController;
     use App\Http\Controllers\PushNotificationController;
@@ -62,6 +63,9 @@ use App\Http\Controllers\PostController;
         Route::post('login', [FirebaseController::class,'login']);
         Route::post('register',[FirebaseController::class,'register']);
         Route::get('me', [FirebaseController::class,'me']);
+        Route::middleware(['web'])->group(function() {
+            Route::post('/auth/google', [FirebaseController::class, 'signInWithGoogle']);
+        });
     });
 
     //Post CRUD
@@ -75,4 +79,8 @@ use App\Http\Controllers\PostController;
 
 
     //notification
-    Route::get('/send-notification', [PushNotificationController::class, 'sendPushNotification']);
+
+    Route::group(['prefix'=>'notification'],function(){
+        Route::post('/send-topic-notification', [FirebaseNotificationController::class, 'sendToTopic']);
+        Route::post('/send-device-notification', [FirebaseNotificationController::class, 'sentToSpecificDevice']);
+    });

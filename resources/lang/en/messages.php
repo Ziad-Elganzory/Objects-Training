@@ -1,5 +1,7 @@
 <?php
 
+use Kreait\Firebase\Messaging\Topic;
+
 return [
     'posts'=>[
         'success'=>[
@@ -15,6 +17,16 @@ return [
             'post_retrived'=>'Failed to retrive post',
             'post_update'=>'Failed to update post',
             'post_delete'=>'Failed to delete post',
+        ],
+    ],
+    'firebase_notification' => [
+        'success'=>[
+            'topic'=>'Notification sent to topic successfully',
+            'singleDevice'=>'Notification sent to Device successfully'
+        ],
+        'fail'=>[
+            'topic'=>'Failed to send notification to topic',
+            'singleDevice'=>'Failed to send notification to Device',
         ],
     ],
 

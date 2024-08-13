@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -130,4 +130,67 @@
             </div>
         </div>
     </body>
+</html> --}}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sign-In</title>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxyUJh_zKLhFlMCcmS7sNNl1BytDMZ_48",
+            authDomain: "objects-laravel.firebaseapp.com",
+            databaseURL: "https://objects-laravel-default-rtdb.firebaseio.com",
+            projectId: "objects-laravel",
+            storageBucket: "objects-laravel.appspot.com",
+            messagingSenderId: "768759484294",
+            appId: "1:768759484294:web:15b9edf223eb5261d7a607",
+            measurementId: "G-ECJDN96BW4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        // Function to handle Google Sign-In
+        window.signInWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const idToken = await result.user.getIdToken();
+
+                // Send the ID token to your backend
+                const response = await fetch('api/firebase/verify-google-id-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ idToken })
+                });
+
+                const data = await response.json();
+                console.log('Success:', data);
+
+                // Handle successful login
+                alert('User authenticated successfully!');
+            } catch (error) {
+                console.error('Error signing in:', error);
+                alert('Error signing in.');
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>Google Sign-In</h1>
+    <button onclick="signInWithGoogle()">Sign in with Google</button>
+</body>
 </html>

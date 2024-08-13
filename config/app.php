@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use L5Swagger\L5SwaggerServiceProvider;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\SocialiteServiceProvider;
 use Tymon\JWTAuth\Providers\LaravelServiceProvider;
 
 return [
@@ -173,6 +175,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         LaravelServiceProvider::class,
         L5SwaggerServiceProvider::class,
+        SocialiteServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -188,6 +191,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
+        'Socialite' => Socialite::class,
     ])->toArray(),
 
 ];
