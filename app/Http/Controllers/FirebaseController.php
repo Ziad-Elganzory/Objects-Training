@@ -80,6 +80,58 @@ class FirebaseController extends Controller
         }
     }
 
+    public function signInWithPhoneNumber(Request $request)
+    {
+        $idToken = $request->input('idToken');
+
+        try {
+            $apiKey = env('FIREBASE_API_KEY'); // Your Firebase API Key
+            $url = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" . $apiKey;
+
+            // Send request to Firebase API to verify the ID token
+            $response = Http::post($url, [
+                'idToken' => $idToken,
+            ]);
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                $data = $response->json();
+                $userFromFirebase = $data['users'][0];
+
+                $userId = $userFromFirebase['localId'];
+                $userPhoneNumber = $userFromFirebase['phoneNumber'];
+
+                // Find or create the user in your database
+                $user = User::firstOrCreate(
+                    ['firebase_uid' => $userId], // Assuming you store Firebase user ID in 'firebase_uid'
+                    [
+                        'phone' => $userPhoneNumber,
+                        'password' => bcrypt('default_password'), // Use a secure default password
+                    ]
+                );
+
+                // Log the user in
+                auth()->login($user);
+
+                return response()->json([
+                    'status' => 'success',
+                    'user' => $user,
+                ]);
+            } else {
+                // Token verification failed
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid ID token.',
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     public function register(Request $request)
     {
         $request->validate([

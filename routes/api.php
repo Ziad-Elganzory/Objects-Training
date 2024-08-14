@@ -65,6 +65,7 @@ use App\Http\Controllers\PostController;
         Route::get('me', [FirebaseController::class,'me']);
         Route::middleware(['web'])->group(function() {
             Route::post('/auth/google', [FirebaseController::class, 'signInWithGoogle']);
+            Route::post('/auth/phone', [FirebaseController::class, 'signInWithPhoneNumber']);
         });
     });
 

@@ -131,7 +131,7 @@
         </div>
     </body>
 </html> --}}
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -169,7 +169,7 @@
                 const idToken = await result.user.getIdToken();
 
                 // Send the ID token to your backend
-                const response = await fetch('api/firebase/verify-google-id-token', {
+                const response = await fetch('api/firebase/auth/google', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -183,7 +183,7 @@
                 // Handle successful login
                 alert('User authenticated successfully!');
             } catch (error) {
-                console.error('Error signing in:', error);
+                console.error('Error signing in:', error.message);
                 alert('Error signing in.');
             }
         };
@@ -192,5 +192,20 @@
 <body>
     <h1>Google Sign-In</h1>
     <button onclick="signInWithGoogle()">Sign in with Google</button>
+</body>
+</html> --}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src={{mix('public/js/firebaseui.js')}}></script>
+    <link type="text/css" rel="stylesheet" href={{ mix('public/css/firebaseui.css') }} />
+</head>
+<body>
+
 </body>
 </html>
